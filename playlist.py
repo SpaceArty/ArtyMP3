@@ -1,0 +1,151 @@
+import os, random, tkinter as tk
+from tkinter import filedialog
+import silent_pygame_import  # fait l'import silencieux
+import pygame  # maintenant sans message
+from mutagen.mp3 import MP3
+
+class PlaylistManager:
+    def __init__(self, lecteur):
+        self.lecteur = lecteur  # référence au LecteurMP3 (pour charger morceau, etc)
+        self.playlist = []
+        self.index_courant = -1
+        self.liste_prochains = None
+
+    # --------------------------------------------------------------- CHARGEMENT
+    def charger_fichier(self):
+        chemins = filedialog.askopenfilenames(filetypes=[("Fichiers MP3", "*.mp3")])
+        if chemins:
+            nouveaux = [f for f in chemins if f not in self.playlist]
+            self.playlist.extend(nouveaux)
+            if self.index_courant == -1 and nouveaux:
+                self.index_courant = 0
+                self.charger_morceau(self.playlist[self.index_courant], update_playlist=True)
+            self.mettre_a_jour_liste_prochains()
+
+    def charger_morceau(self, chemin, update_playlist=True):
+        try:
+            self.lecteur.fichier_en_cours = chemin
+            self.lecteur.label_fichier.config(text=os.path.basename(chemin))
+            pygame.mixer.music.load(chemin)
+
+            audio = MP3(chemin)
+            self.lecteur.duree_morceau = audio.info.length
+
+            self.lecteur.progression.config(to=int(self.lecteur.duree_morceau))
+            self.lecteur.progression.set(0)
+            self.lecteur.en_pause = False
+
+            if self.lecteur.en_pause:
+                self.lecteur.bouton_play.config(image=self.lecteur.img_play)
+            else:
+                self.lecteur.bouton_play.config(image=self.lecteur.img_pause)
+
+            if self.lecteur.label_temps_total:
+                self.lecteur.label_temps_total.config(text=self.lecteur.format_temps(self.lecteur.duree_morceau))
+            if self.lecteur.label_temps_courant:
+                self.lecteur.label_temps_courant.config(text=self.lecteur.format_temps(0))
+
+            self.lecteur.position_actuelle = 0
+            self.lecteur.position_depart_lecture = 0
+            self.lecteur.temps_debut_play = pygame.time.get_ticks() / 1000
+
+            if update_playlist:
+                if chemin in self.playlist:
+                    self.index_courant = self.playlist.index(chemin)
+                else:
+                    self.index_courant = -1
+                self.mettre_a_jour_liste_prochains()
+        except Exception as e:
+            print(f"Erreur lors du chargement du morceau: {e}")
+
+    def charger_playlist(self):
+        chemins = filedialog.askopenfilenames(filetypes=[("Fichiers MP3", "*.mp3")])
+        if chemins:
+            self.playlist = list(dict.fromkeys(chemins))
+            self.index_courant = 0
+            self.charger_morceau(self.playlist[self.index_courant], update_playlist=True)
+    
+    def suivant(self):
+        if not self.playlist or self.index_courant == -1:
+            return
+        
+        if self.index_courant < len(self.playlist):
+            morceau_courant = self.playlist.pop(self.index_courant)
+            self.playlist.append(morceau_courant)
+
+        if not self.playlist:
+            self.index_courant = -1
+            return
+
+        self.index_courant = min(self.index_courant, len(self.playlist) - 1)
+        self.charger_morceau(self.playlist[self.index_courant], update_playlist=True)
+        pygame.mixer.music.play()
+        self.lecteur.bouton_play.config(image=self.lecteur.img_pause)
+        self.mettre_a_jour_liste_prochains()
+
+    def precedent(self):
+        if self.playlist:
+            self.playlist = [self.playlist[-1]] + self.playlist[:-1]
+
+            self.index_courant = 0  # toujours le début après rotation
+            self.charger_morceau(self.playlist[self.index_courant], update_playlist=False)
+            pygame.mixer.music.play()
+            self.lecteur.bouton_play.config(image=self.lecteur.img_pause)
+            self.mettre_a_jour_liste_prochains()
+
+    # --------------------------------------------------------------- PROCHAIN
+    def lier_listbox_prochains(self, listbox):
+        self.liste_prochains = listbox
+        self.mettre_a_jour_liste_prochains()
+
+    def mettre_a_jour_liste_prochains(self):
+        if not self.liste_prochains or not self.playlist or self.index_courant == -1:
+            return
+        self.liste_prochains.delete(0, tk.END)
+        n = len(self.playlist)
+        if self.index_courant == -1:
+            return
+        for i in range(self.index_courant + 1, n):
+            nom = os.path.basename(self.playlist[i])
+            self.liste_prochains.insert(tk.END, nom)
+
+    def gestion_morceau_suivant(self, callback=None):
+        if not self.playlist or self.index_courant == -1:
+            if callback: callback()
+            return
+
+        if self.index_courant < len(self.playlist):
+            morceau_courant = self.playlist.pop(self.index_courant)
+            self.playlist.append(morceau_courant)
+
+        if not self.playlist:
+            self.index_courant = -1
+            if callback: callback()
+            return
+
+        self.index_courant = min(self.index_courant, len(self.playlist) - 1)
+
+        def lancer_apres_delai():
+            self.charger_morceau(self.playlist[self.index_courant], update_playlist=True)
+            pygame.mixer.music.play(loops=0, start=0.0)
+            self.lecteur.bouton_play.config(image=self.lecteur.img_pause)
+            self.mettre_a_jour_liste_prochains()
+            if callback:
+                callback()  # ← on libère ici
+
+        pygame.mixer.music.stop()
+        if hasattr(self.lecteur, 'fenetre') and self.lecteur.fenetre:
+            self.lecteur.fenetre.after(1000, lancer_apres_delai)
+        else:
+            lancer_apres_delai()
+
+
+    # --------------------------------------------------------------- RANDOMISATION
+    def melanger_prochains(self):
+        if not self.playlist or self.index_courant == -1:
+            return
+        prefixe = self.playlist[:self.index_courant+1]
+        suffixe = self.playlist[self.index_courant+1:]
+        random.shuffle(suffixe)
+        self.playlist = prefixe + suffixe
+        self.mettre_a_jour_liste_prochains()
