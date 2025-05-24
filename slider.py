@@ -7,8 +7,8 @@ class SliderCustom(tk.Canvas):
         super().__init__(master, width=length, height=30, bg="#000000", highlightthickness=0, **kwargs)
         self.length = length
 
-        chemin_barre = resource_path("Images/help.png")
-        chemin_knob = resource_path("Images/previous.png")
+        chemin_barre = resource_path("Images/slider.png")
+        chemin_knob = resource_path("Images/point.png")
 
         self.bar_img = ImageTk.PhotoImage(Image.open(chemin_barre).resize((length, 10)))
         self.knob_img = ImageTk.PhotoImage(Image.open(chemin_knob).resize((20, 20)))

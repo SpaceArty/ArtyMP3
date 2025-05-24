@@ -1,1 +1,8 @@
-{"volume": 69}
+{
+    "volume": 40,
+    "COULEUR_BAS": "#000000",
+    "COULEUR_FOND": "#1e1e1e",
+    "BOUCLE_OFF": 0,
+    "BOUCLE_ONCE": 1,
+    "BOUCLE_ALWAYS": 2
+}

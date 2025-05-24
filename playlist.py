@@ -3,10 +3,11 @@ from tkinter import filedialog
 import silent_pygame_import  # fait l'import silencieux
 import pygame  # maintenant sans message
 from mutagen.mp3 import MP3
+from utils import BOUCLE_ONCE, BOUCLE_ALWAYS, BOUCLE_OFF
 
 class PlaylistManager:
     def __init__(self, lecteur):
-        self.lecteur = lecteur  # référence au LecteurMP3 (pour charger morceau, etc)
+        self.lecteur = lecteur
         self.playlist = []
         self.index_courant = -1
         self.liste_prochains = None
@@ -69,7 +70,7 @@ class PlaylistManager:
         if not self.playlist or self.index_courant == -1:
             return
         
-        if self.index_courant < len(self.playlist):
+        if self.index_courant < len(self.playlist) - 1:
             morceau_courant = self.playlist.pop(self.index_courant)
             self.playlist.append(morceau_courant)
 
@@ -111,34 +112,50 @@ class PlaylistManager:
 
     def gestion_morceau_suivant(self, callback=None):
         if not self.playlist or self.index_courant == -1:
-            if callback: callback()
+            if callback:
+                callback()
             return
 
-        if self.index_courant < len(self.playlist):
-            morceau_courant = self.playlist.pop(self.index_courant)
-            self.playlist.append(morceau_courant)
+        etat_boucle = getattr(self.lecteur, 'etat_boucle', 0)
 
-        if not self.playlist:
-            self.index_courant = -1
-            if callback: callback()
-            return
+        if etat_boucle == BOUCLE_OFF:
+            # Gestion classique : avance dans la playlist circulaire
+            if self.index_courant < len(self.playlist):
+                morceau_courant = self.playlist.pop(self.index_courant)
+                self.playlist.append(morceau_courant)
 
-        self.index_courant = min(self.index_courant, len(self.playlist) - 1)
+            if not self.playlist:
+                self.index_courant = -1
+                if callback:
+                    callback()
+                return
+            self.index_courant = min(self.index_courant, len(self.playlist) - 1)
 
         def lancer_apres_delai():
+            loops = 0
+            if etat_boucle == BOUCLE_ONCE:
+                loops = 1  # jouer 2 fois le morceau
+            elif etat_boucle == BOUCLE_ALWAYS:
+                loops = -1  # boucle infinie
+
             self.charger_morceau(self.playlist[self.index_courant], update_playlist=True)
-            pygame.mixer.music.play(loops=0, start=0.0)
+            pygame.mixer.music.play(loops=loops, start=0.0)
             self.lecteur.bouton_play.config(image=self.lecteur.img_pause)
             self.mettre_a_jour_liste_prochains()
+
+            # Remise à zéro de la boucle "once" après lecture
+            if etat_boucle == BOUCLE_ONCE:
+                self.lecteur.etat_boucle = BOUCLE_OFF
+                self.lecteur.update_bouton_boucle()
+
             if callback:
-                callback()  # ← on libère ici
+                callback()
 
         pygame.mixer.music.stop()
         if hasattr(self.lecteur, 'fenetre') and self.lecteur.fenetre:
             self.lecteur.fenetre.after(1000, lancer_apres_delai)
         else:
             lancer_apres_delai()
-
 
     # --------------------------------------------------------------- RANDOMISATION
     def melanger_prochains(self):

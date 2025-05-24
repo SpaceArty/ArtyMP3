@@ -1,14 +1,13 @@
-import json,  tkinter as tk
-import tkinter.messagebox as messagebox
 import silent_pygame_import
-import pygame
-from mutagen.mp3 import MP3
+import pygame, json
 from playlist import PlaylistManager
 
 SETTINGS_FILE = "settings.json"
+BOUCLE_OFF, BOUCLE_ONCE, BOUCLE_ALWAYS = 0, 1, 2
 
 class LecteurMP3:
-    def __init__(self, label_fichier, progression, bouton_play, img_play=None, img_pause=None, slider_volume=None):
+    def __init__(self, label_fichier, progression, bouton_play, img_play=None, img_pause=None, slider_volume=None,
+                 btn_boucle=None, img_boucle=None, img_boucle_once=None, img_boucle_always=None):
         pygame.init()
         pygame.mixer.init()
 
@@ -19,6 +18,13 @@ class LecteurMP3:
         self.img_play = img_play
         self.img_pause = img_pause
         self.slider_volume = slider_volume
+
+        # Nouveaux éléments pour le bouton boucle
+        self.etat_boucle = BOUCLE_OFF
+        self.btn_boucle = btn_boucle
+        self.img_boucle = img_boucle
+        self.img_boucle_once = img_boucle_once
+        self.img_boucle_always = img_boucle_always
 
         # Variables pour la lecture
         self.position_depart_lecture = 0
@@ -46,14 +52,19 @@ class LecteurMP3:
         if hasattr(self, "label_valeur_volume"):
             self.label_valeur_volume.config(text=str(self.volume))
 
-        # Playlist
+        # Misc
         self.playlist_manager = PlaylistManager(self)
 
     # --------------------------------------------------------------- VOLUME
     def sauvegarder_volume(self, volume):
-        data = {"volume": volume}
-        with open(SETTINGS_FILE, "w") as f:
-            json.dump(data, f)
+        try:
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            data = {}
+        data["volume"] = volume
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
 
     def charger_volume(self):
         try:
@@ -185,18 +196,30 @@ class LecteurMP3:
         if self.fenetre:
             self.fenetre.after(500, self.verifier_fin_morceau)
 
-    # --------------------------------------------------------------- HELP
-    def afficher_aide():
-        messagebox.showinfo("Aide", "Bienvenue dans le menu aide. Ce menu contient le mode d'emplois, des réponses aux questions fréquentes, des crédits et bien plus!" \
-        "Si vous avez des questions, vous pouvez venir me demander sur discord (@spacearty) ou la poster sur le github (https://github.com/SpaceArty)." \
-        "\n\nUTILISATION : \n- Pour charger les fichier, il suffit de cliquer sur le bouton 'dossier' et de choisir un, ou plusieurs fichiers. Note: seul les fichiers .mp3 sont " \
-        "prit en compte.\n\n- Le bouton 'shuffle' permet de randomiser tout les mp3 actuellement chargé. L'algorithme utilisé est actuellement du 'vrai' random, donc il est possible " \
-        "que aucun des mp3 ne change de place si vous avez de la chance!\n\n- Le bouton 'help' ouvre se menu. Et rien d'autre de très utile. Mais laissez le, il fait de son mieux." \
-        "\n\n- Les boutons 'previous' et 'next' fonctionnent (la plupart du temps) et permettent de changer de mp3 a sa guise. Note: pour ceux qui savent, ces boutons déplacent " \
-        "physiquement les mp3 dans la table (réference a Annick Dupont)\n\n- Le bouton 'play' / 'pause' est modifié dynamiquement grâce a de la magie noir que certains appellent " \
-        "'code'... Mais au sinon il ne fait rien d'autre de spécial que mettre en pause le mp3.\n\n - Le slider en bas a droite permet de changer le volume du mp3. " \
-        "Il se rapellera du volume que vous aviez mit avant donc pas besoin de le changer a chaque lancement.\n\nQUESTIONS :\n- Aucune questions actuellement. " \
-        "\n\nCREDITS :\n- SpaceArty | Code\n- Destro | Graphismes\n-ChatGPT | Le goat")
+    # --------------------------------------------------------------- LOOP
+    def toggle_boucle(self):
+        self.etat_boucle = (self.etat_boucle + 1) % 3
+        self.update_bouton_boucle()
+
+    def update_bouton_boucle(self):
+        if self.etat_boucle == BOUCLE_OFF:
+            self.btn_boucle.config(image=self.img_boucle)
+            self.btn_boucle.image = self.img_boucle
+        elif self.etat_boucle == BOUCLE_ONCE:
+            self.btn_boucle.config(image=self.img_boucle_once)
+            self.btn_boucle.image = self.img_boucle_once
+        elif self.etat_boucle == BOUCLE_ALWAYS:
+            self.btn_boucle.config(image=self.img_boucle_always)
+            self.btn_boucle.image = self.img_boucle_always
+        self.btn_boucle.update_idletasks()
+
+    def mettre_a_jour_etat_boucle(self):
+        if self.etat_boucle == BOUCLE_OFF:
+            self.btn_boucle.config(image=self.img_boucle)
+        elif self.etat_boucle == BOUCLE_ONCE:
+            self.btn_boucle.config(image=self.img_boucle_once)
+        elif self.etat_boucle == BOUCLE_ALWAYS:
+            self.btn_boucle.config(image=self.img_boucle_always)
 
     # --------------------------------------------------------------- PLAYLIST LINK
     def gestion_morceau_suivant(self):
