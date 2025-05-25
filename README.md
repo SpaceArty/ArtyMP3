@@ -4,6 +4,7 @@ Ceci est une copie du texte affiché lorsque le bouton 'aide' est cliqué.
 "Si vous avez des questions, vous pouvez venir me demander sur discord (@spacearty) ou la poster sur le github (https://github.com/SpaceArty)."
 
 "UTILISATION :" 
+
 "- Pour charger les fichier, il suffit de cliquer sur le bouton 'dossier' et de choisir un, ou plusieurs fichiers. Note: seul les fichiers .mp3 sont"
 "prit en compte.
 
@@ -22,9 +23,11 @@ Ceci est une copie du texte affiché lorsque le bouton 'aide' est cliqué.
 "Il se rapellera du volume que vous aviez mit avant donc pas besoin de le changer a chaque lancement."
 
 "QUESTIONS :" 
+
 "- Aucune questions actuellement."
 
 "CREDITS :" 
+
 "- SpaceArty | Code"
 "- Destro | Graphismes"
 "- ChatGPT | Le goat"
