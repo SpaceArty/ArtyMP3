@@ -3,10 +3,11 @@ Ceci est une copie du texte affiché lorsque le bouton 'aide' est cliqué.
 "Bienvenue dans le menu aide. Ce menu contient le mode d'emplois, des réponses aux questions fréquentes, des crédits et bien plus!
 "Si vous avez des questions, vous pouvez venir me demander sur discord (@spacearty) ou la poster sur le github (https://github.com/SpaceArty)."
 
-"UTILISATION :"
-
+"UTILISATION :" 
 "- Pour charger les fichier, il suffit de cliquer sur le bouton 'dossier' et de choisir un, ou plusieurs fichiers. Note: seul les fichiers .mp3 sont"
-"prit en compte.\n\n- Le bouton 'shuffle' permet de randomiser tout les mp3 actuellement chargé. L'algorithme utilisé est actuellement du 'vrai' random, donc il est possible"
+"prit en compte.
+
+"- Le bouton 'shuffle' permet de randomiser tout les mp3 actuellement chargé. L'algorithme utilisé est actuellement du 'vrai' random, donc il est possible"
 "que aucun des mp3 ne change de place si vous avez de la chance!"
 
 "- Le bouton 'help' ouvre se menu. Et rien d'autre de très utile. Mais laissez le, il fait de son mieux."
@@ -20,12 +21,10 @@ Ceci est une copie du texte affiché lorsque le bouton 'aide' est cliqué.
 "- Le slider en bas a droite permet de changer le volume du mp3."
 "Il se rapellera du volume que vous aviez mit avant donc pas besoin de le changer a chaque lancement."
 
-"QUESTIONS :"
-
+"QUESTIONS :" 
 "- Aucune questions actuellement."
 
-"CREDITS :"
-
+"CREDITS :" 
 "- SpaceArty | Code"
 "- Destro | Graphismes"
 "- ChatGPT | Le goat"
