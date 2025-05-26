@@ -1,10 +1,14 @@
-import tkinter as tk
+import tkinter as tk, utils
 from PIL import Image, ImageTk
 from lecteurMP3 import LecteurMP3
 from playlist import PlaylistManager
 from slider import SliderCustom
-from utils import afficher_aide, charger_image, bouton_icone
-from utils import COULEUR_BAS, COULEUR_FOND
+
+COULEUR_FOND = utils.COULEUR_FOND
+COULEUR_BAS = utils.COULEUR_BAS
+bouton_icone = utils.bouton_icone
+ouvrir_settings = utils.ouvrir_settings
+charger_image = utils.charger_image
 
 # pyinstaller --onefile --windowed --add-data "settings.json;." --add-data "Images;Images" --name ArtyMP3 main.py
 # La commande ci dessus permet de créer le fichier .exe une fois des changements effectués.
@@ -25,6 +29,7 @@ img_help = charger_image("help")
 img_boucle = charger_image("loop")
 img_boucle_once = charger_image("loop1")
 img_boucle_always = charger_image("loop2")
+img_settings = charger_image("settings")
 
 frame_global = tk.Frame(fenetre, bg=COULEUR_FOND)
 frame_global.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -32,9 +37,9 @@ frame_global.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 frame_progression = tk.Frame(frame_global, bg=COULEUR_FOND)  # --------------------------------------------------------------- BARRE DE PROGRESSION + TEMPS + AIDE
 frame_progression.pack(fill=tk.X, pady=(0, 10))
 
-btn_help = tk.Button(frame_progression, image=img_help, command=afficher_aide, bg=COULEUR_FOND,
-                    activebackground=COULEUR_FOND, borderwidth=0, highlightthickness=0, relief="flat")
-btn_help.grid(in_=frame_progression, row=0, column=0, padx=(5, 5))
+btn_settings = tk.Button(frame_progression, image=img_settings, command=lambda: ouvrir_settings(img_help, img_boucle), bg=COULEUR_FOND,
+    activebackground=COULEUR_FOND, borderwidth=0, highlightthickness=0, relief="flat")
+btn_settings.grid(in_=frame_progression, row=0, column=0, padx=(5, 5))
 
 label_temps_courant = tk.Label(frame_progression, text="00:00", **style_label)
 label_temps_courant.grid(row=0, column=1, padx=(5, 5))
