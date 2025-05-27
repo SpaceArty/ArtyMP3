@@ -29,6 +29,7 @@ BOUCLE_OFF = settings.get("BOUCLE_OFF", 0)
 BOUCLE_ONCE = settings.get("BOUCLE_ONCE", 1)
 BOUCLE_ALWAYS = settings.get("BOUCLE_ALWAYS", 2)
 SHUFFLE_ALTERNATIF = settings.get("SHUFFLE_ALTERNATIF", False)
+FENETRE_DYNAMIQUE = settings.get("FENETRE_DYNAMIQUE", False)
 
 # --------------------------------------------------------------- ET LE RESTE
 def charger_image(nom):
@@ -51,6 +52,15 @@ def get_artiste(chemin):
         return tags.get("artist", ["Inconnu"])[0]
     except Exception:
         return "Inconnu"
+    
+def mettre_a_jour_titre_fenetre(root, morceau_actuel=None):
+    if morceau_actuel:
+        # Extraire juste le nom du fichier sans chemin ni extension
+        nom_simple = os.path.basename(morceau_actuel)
+        nom_sans_extension = os.path.splitext(nom_simple)[0]
+        root.title(nom_sans_extension)
+    else:
+        root.title("ArtyMP3")
 
 def ouvrir_settings(img_help, img_boucle):
     settings_actuels = load_settings()
@@ -58,7 +68,7 @@ def ouvrir_settings(img_help, img_boucle):
     fenetre_settings = tk.Toplevel()
     fenetre_settings.title("Paramètres")
     fenetre_settings.configure(bg=settings_actuels.get("COULEUR_FOND", "#222222"))
-    fenetre_settings.geometry("320x250")
+    fenetre_settings.geometry("320x280")
 
     frame_titre = tk.Frame(fenetre_settings, bg=COULEUR_FOND)
     frame_titre.pack(fill=tk.X, pady=10, padx=10)
@@ -83,6 +93,7 @@ def ouvrir_settings(img_help, img_boucle):
         entry_bas.delete(0, tk.END)
         entry_bas.insert(0, settings.get("DEFAULT_COULEUR_BAS", "#333333"))
         var_shuffle_alt.set(settings.get("DEFAULT_SHUFFLE_ALTERNATIF", False))
+        var_nom_fenetre_dynamique.set(settings.get("DEFAULT_FENETRE_DYNAMIQUE", False))
 
     btn_reset = tk.Button(frame_titre, image=img_boucle, command=reset_champs,
                           bg=COULEUR_FOND, activebackground=COULEUR_FOND,
@@ -116,20 +127,31 @@ def ouvrir_settings(img_help, img_boucle):
                                        activebackground=COULEUR_FOND)
     check_shuffle_alt.pack(pady=(10, 5))
 
+    # Checkbox Nom de fenêtre dynamique
+    var_nom_fenetre_dynamique = tk.BooleanVar(value=settings_actuels.get("FENETRE_DYNAMIQUE", False))
+    check_nom_fenetre_dynamique = tk.Checkbutton(fenetre_settings, text="Activer nom de fenêtre dynamique",
+                                       variable=var_nom_fenetre_dynamique, onvalue=True, offvalue=False,
+                                       bg=COULEUR_FOND, fg="white", selectcolor=COULEUR_FOND,
+                                       activebackground=COULEUR_FOND)
+    check_nom_fenetre_dynamique.pack(pady=(0, 10))
+
     def sauvegarder_params():
         new_fond = entry_fond.get()
         new_bas = entry_bas.get()
         new_shuffle_alt = var_shuffle_alt.get()
+        new_nom_fenetre_dynamique = var_nom_fenetre_dynamique.get()
 
         print(f"Nouvelle couleur fond : {new_fond}")
         print(f"Nouvelle couleur bas : {new_bas}")
         print(f"Shuffle alternatif : {new_shuffle_alt}")
+        print(f"Nom fenêtre dynamique : {new_nom_fenetre_dynamique}")
 
         # Sauvegarder les paramètres
         new_settings = settings_actuels.copy()
         new_settings["COULEUR_FOND"] = new_fond
         new_settings["COULEUR_BAS"] = new_bas
         new_settings["SHUFFLE_ALTERNATIF"] = new_shuffle_alt
+        new_settings["FENETRE_DYNAMIQUE"] = new_nom_fenetre_dynamique
 
         chemin = resource_path("settings.json")
         try:
@@ -149,12 +171,15 @@ def ouvrir_settings(img_help, img_boucle):
 
 def afficher_aide():
     messagebox.showinfo("Aide", "Bienvenue dans le menu aide. Ce menu contient le mode d'emplois, des réponses aux questions fréquentes, des crédits et bien plus!" \
-    "Si vous avez des questions, vous pouvez venir me demander sur discord (@spacearty) ou la poster sur le github (https://github.com/SpaceArty/ArtyMP3/)." \
+    "Si vous avez des questions, vous pouvez venir me demander sur discord (@spacearty) ou la poster sur le GitHub : https://github.com/SpaceArty/ArtyMP3/" \
     "\n\nUTILISATION : \nPour charger les fichier, il suffit de cliquer sur le bouton 'dossier' et de choisir un, ou plusieurs fichiers. Note: seul les fichiers .mp3 sont " \
     "prit en compte.\n\nLe bouton 'shuffle' permet de randomiser tout les mp3 actuellement chargé. L'algorithme utilisé est actuellement du 'vrai' random, donc il est possible " \
     "que aucun des mp3 ne change de place si vous avez de la chance!\n\nLe bouton 'paramètre' ouvre un sous menu. Et rien d'autre de très utile. Mais laissez le, il fait de son mieux." \
     "\n\nLes boutons 'previous' et 'next' fonctionnent (la plupart du temps) et permettent de changer de mp3 a sa guise. Note: pour ceux qui savent, ces boutons déplacent " \
     "physiquement les mp3 dans la table (réference a Annick Dupont)\n\nLe bouton 'play' / 'pause' est modifié dynamiquement grâce a de la magie noir que certains appellent " \
     "'code'... Mais au sinon il ne fait rien d'autre de spécial que mettre en pause le mp3.\n\nLe slider en bas a droite permet de changer le volume du mp3. " \
-    "Il se rapellera du volume que vous aviez mit avant donc pas besoin de le changer a chaque lancement.\n\nQUESTIONS :\nAucune questions actuellement. " \
+    "Il se rapellera du volume que vous aviez mit avant donc pas besoin de le changer a chaque lancement.\n\nQUESTIONS :\nQ : Que fait le 'Shuffle Alternatif' ?" \
+    " R : C'est une fonction en BETA qui permet de mélanger les MP3 en fonctione des artistes. Note : Les métadonnées du fichier MP3 sont nécessaire. " \
+    "Si a coté du titre du MP3 c'est marqué 'Inconnu', ca veut dire qu'elles sont manquantes.\n\nQ : A quoi sert le 'Nom de Fenêtre Dynamique' ? " \
+    "R : Ça change le nom de la fenêtre en fonction du MP3 actuel." \
     "\n\nCREDITS :\nSpaceArty | Code\nDestro | Graphismes\nChatGPT | Le goat")

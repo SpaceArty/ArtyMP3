@@ -1,7 +1,7 @@
 Ceci est une copie du texte affiché lorsque le bouton 'aide' est cliqué.
 
 Bienvenue dans le menu aide. Ce menu contient le mode d'emploi, des réponses aux questions fréquentes, des crédits et bien plus !
-Si vous avez des questions, vous pouvez me contacter sur Discord (@spacearty) ou poster une question sur le GitHub :https://github.com/SpaceArty/ArtyMP3/
+Si vous avez des questions, vous pouvez me contacter sur Discord (@spacearty) ou poster une question sur le GitHub : https://github.com/SpaceArty/ArtyMP3/
 
 UTILISATION :
 
@@ -24,7 +24,9 @@ Il mémorise le volume choisi, donc pas besoin de le régler à chaque lancement
 
 QUESTIONS :
 
-Aucune question actuellement.
+Q : Que fait le "Shuffle Alternatif" ? R : C'est une fonction en BETA qui permet de mélanger les MP3 en fonctione des artistes.
+Note : Les métadonnées du fichier MP3 sont nécessaire. Si a coté du titre du MP3 c'est marqué "Inconnu", ca veut dire qu'elles sont manquantes.
+Q : A quoi sert le "Nom de Fenêtre Dynamique" ? R : Ça change le nom de la fenêtre en fonction du MP3 actuel.
 
 CRÉDITS :
 

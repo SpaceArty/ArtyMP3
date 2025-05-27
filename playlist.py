@@ -7,11 +7,12 @@ from mutagen.mp3 import MP3
 import utils
 
 class PlaylistManager:
-    def __init__(self, lecteur):
+    def __init__(self, lecteur, root):
         self.lecteur = lecteur
         self.playlist = []
         self.index_courant = -1
         self.liste_prochains = None
+        self.root = root
 
     # --------------------------------------------------------------- CHARGEMENT
     def charger_fichier(self):
@@ -57,6 +58,7 @@ class PlaylistManager:
                 else:
                     self.index_courant = -1
                 self.mettre_a_jour_liste_prochains()
+            utils.mettre_a_jour_titre_fenetre(self.root, chemin)
         except Exception as e:
             print(f"Erreur lors du chargement du morceau: {e}")
 

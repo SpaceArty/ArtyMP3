@@ -1,13 +1,14 @@
 {
-    "volume": 69,
     "COULEUR_BAS": "#000000",
     "COULEUR_FOND": "#1e1e1e",
+    "volume": 69,
     "BOUCLE_OFF": 0,
     "BOUCLE_ONCE": 1,
     "BOUCLE_ALWAYS": 2,
     "SHUFFLE_ALTERNATIF": true,
-    "DEFAULT_VOLUME": 69,
+    "FENETRE_DYNAMIQUE": true,
     "DEFAULT_COULEUR_BAS": "#000000",
     "DEFAULT_COULEUR_FOND": "#1e1e1e",
+    "DEFAULT_VOLUME": 69,
     "DEFAULT_SHUFFLE_ALTERNATIF": false
 }

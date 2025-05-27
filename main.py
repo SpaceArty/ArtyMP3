@@ -97,8 +97,8 @@ slider_volume.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(2, 0))
 frame_volume.columnconfigure(0, weight=1)
 frame_volume.columnconfigure(1, weight=0)
 
-lecteur = LecteurMP3(label_fichier, progression, None, img_play, img_pause, slider_volume)  # --------------------------------------------------------------- LECTEUR
-gestion_playlist = PlaylistManager(lecteur)
+lecteur = LecteurMP3(label_fichier, progression, None, img_play, img_pause, slider_volume, fenetre)  # --------------------------------------------------------------- LECTEUR
+gestion_playlist = PlaylistManager(lecteur, fenetre)
 gestion_playlist.lier_listbox_prochains(liste_prochains)
 lecteur.playlist_manager = gestion_playlist
 slider_volume.set_callback(lecteur.changer_volume)

@@ -7,7 +7,7 @@ BOUCLE_OFF, BOUCLE_ONCE, BOUCLE_ALWAYS = 0, 1, 2
 
 class LecteurMP3:
     def __init__(self, label_fichier, progression, bouton_play, img_play=None, img_pause=None, slider_volume=None,
-                 btn_boucle=None, img_boucle=None, img_boucle_once=None, img_boucle_always=None):
+                 btn_boucle=None, img_boucle=None, img_boucle_once=None, img_boucle_always=None, root=None):
         pygame.init()
         pygame.mixer.init()
 
@@ -53,7 +53,10 @@ class LecteurMP3:
             self.label_valeur_volume.config(text=str(self.volume))
 
         # Misc
-        self.playlist_manager = PlaylistManager(self)
+        if root is not None:
+            self.playlist_manager = PlaylistManager(self, root)
+        else:
+            self.playlist_manager = None
 
     # --------------------------------------------------------------- VOLUME
     def sauvegarder_volume(self, volume):
