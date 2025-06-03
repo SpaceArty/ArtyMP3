@@ -1,6 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-from utils import resource_path
+from utils import resource_path  
 
 class SliderCustom(tk.Canvas):
     def __init__(self, master, length=100, **kwargs):

@@ -1,14 +1,15 @@
 {
     "COULEUR_BAS": "#000000",
     "COULEUR_FOND": "#1e1e1e",
-    "volume": 69,
+    "volume": 30,
     "BOUCLE_OFF": 0,
     "BOUCLE_ONCE": 1,
     "BOUCLE_ALWAYS": 2,
-    "SHUFFLE_ALTERNATIF": true,
-    "FENETRE_DYNAMIQUE": true,
+    "SHUFFLE_ALTERNATIF": false,
+    "FENETRE_DYNAMIQUE": false,
     "DEFAULT_COULEUR_BAS": "#000000",
     "DEFAULT_COULEUR_FOND": "#1e1e1e",
     "DEFAULT_VOLUME": 69,
-    "DEFAULT_SHUFFLE_ALTERNATIF": false
+    "DEFAULT_SHUFFLE_ALTERNATIF": false,
+    "DEFAULT_FENETRE_DYNAMIQUE": false
 }

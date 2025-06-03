@@ -1,14 +1,9 @@
-import tkinter as tk, utils
+import tkinter as tk
+import settingsManager, utils
 from PIL import Image, ImageTk
 from lecteurMP3 import LecteurMP3
 from playlist import PlaylistManager
 from slider import SliderCustom
-
-COULEUR_FOND = utils.COULEUR_FOND
-COULEUR_BAS = utils.COULEUR_BAS
-bouton_icone = utils.bouton_icone
-ouvrir_settings = utils.ouvrir_settings
-charger_image = utils.charger_image
 
 # pyinstaller --onefile --windowed --add-data "settings.json;." --add-data "Images;Images" --name ArtyMP3 main.py
 # La commande ci dessus permet de créer le fichier .exe une fois des changements effectués.
@@ -16,8 +11,18 @@ charger_image = utils.charger_image
 fenetre = tk.Tk()
 fenetre.title("ArtyMP3")
 fenetre.geometry("700x350")
+
+settings = settingsManager.SettingsManager()
+COULEUR_FOND = settings.get('COULEUR_FOND', '#222222')
+COULEUR_BAS = settings.get('COULEUR_BAS', '#333333')
+
 fenetre.configure(bg=COULEUR_FOND)
 style_label = {"bg": COULEUR_FOND, "fg": "white", "font": ("Arial", 10)}
+
+utilz = utils.Utils(fenetre, settings)
+bouton_icone = utilz.bouton_icone
+ouvrir_settings = utilz.ouvrir_settings
+charger_image = utilz.charger_image
 
 img_play = charger_image("play")
 img_pause = charger_image("pause")
@@ -98,7 +103,7 @@ frame_volume.columnconfigure(0, weight=1)
 frame_volume.columnconfigure(1, weight=0)
 
 lecteur = LecteurMP3(label_fichier, progression, None, img_play, img_pause, slider_volume, fenetre)  # --------------------------------------------------------------- LECTEUR
-gestion_playlist = PlaylistManager(lecteur, fenetre)
+gestion_playlist = PlaylistManager(lecteur, fenetre, settings)
 gestion_playlist.lier_listbox_prochains(liste_prochains)
 lecteur.playlist_manager = gestion_playlist
 slider_volume.set_callback(lecteur.changer_volume)

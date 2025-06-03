@@ -4,15 +4,18 @@ import silent_pygame_import  # fait l'import silencieux
 import pygame  # maintenant sans message
 from collections import defaultdict
 from mutagen.mp3 import MP3
-import utils
+import utils, settingsManager
+
+settings_manager = settingsManager.SettingsManager()
 
 class PlaylistManager:
-    def __init__(self, lecteur, root):
+    def __init__(self, lecteur, root, settings):
         self.lecteur = lecteur
         self.playlist = []
         self.index_courant = -1
         self.liste_prochains = None
         self.root = root
+        self.settings = settings
 
     # --------------------------------------------------------------- CHARGEMENT
     def charger_fichier(self):
@@ -58,7 +61,9 @@ class PlaylistManager:
                 else:
                     self.index_courant = -1
                 self.mettre_a_jour_liste_prochains()
-            utils.mettre_a_jour_titre_fenetre(self.root, chemin)
+            if settings_manager.get("FENETRE_DYNAMIQUE", False):
+                utils.mettre_a_jour_titre_fenetre(self.root, chemin)
+
         except Exception as e:
             print(f"Erreur lors du chargement du morceau: {e}")
 
@@ -122,7 +127,7 @@ class PlaylistManager:
 
         etat_boucle = getattr(self.lecteur, 'etat_boucle', 0)
 
-        if etat_boucle == utils.BOUCLE_OFF:
+        if etat_boucle == self.settings.BOUCLE_OFF:
             # Gestion classique : avance dans la playlist circulaire
             if self.index_courant < len(self.playlist):
                 morceau_courant = self.playlist.pop(self.index_courant)
@@ -137,9 +142,9 @@ class PlaylistManager:
 
         def lancer_apres_delai():
             loops = 0
-            if etat_boucle == utils.BOUCLE_ONCE:
+            if etat_boucle == self.settings.BOUCLE_ONCE:
                 loops = 1  # jouer 2 fois le morceau
-            elif etat_boucle == utils.BOUCLE_ALWAYS:
+            elif etat_boucle == self.settings.BOUCLE_ALWAYS:
                 loops = -1  # boucle infinie
 
             self.charger_morceau(self.playlist[self.index_courant], update_playlist=True)
@@ -148,8 +153,8 @@ class PlaylistManager:
             self.mettre_a_jour_liste_prochains()
 
             # Remise à zéro de la boucle "once" après lecture
-            if etat_boucle == utils.BOUCLE_ONCE:
-                self.lecteur.etat_boucle = utils.BOUCLE_OFF
+            if etat_boucle == self.settings.BOUCLE_ONCE:
+                self.lecteur.etat_boucle = self.settings.BOUCLE_OFF
                 self.lecteur.update_bouton_boucle()
 
             if callback:
@@ -165,12 +170,13 @@ class PlaylistManager:
     def melanger_prochains(self):
         if not self.playlist or self.index_courant == -1:
             return
-        if utils.settings.get("SHUFFLE_ALTERNATIF", False):
+        if self.settings.get("SHUFFLE_ALTERNATIF", False):
             self._melanger_par_artiste()
         else:
             self._melanger_classique()
 
     def _melanger_classique(self):
+        print('CLASSIQUE')
         prefixe = self.playlist[:self.index_courant + 1]
         suffixe = self.playlist[self.index_courant + 1:]
         random.shuffle(suffixe)
@@ -178,6 +184,7 @@ class PlaylistManager:
         self.mettre_a_jour_liste_prochains()
 
     def _melanger_par_artiste(self):
+        print('ALTERNATIF')
         prefixe = self.playlist[:self.index_courant + 1]
         suffixe = self.playlist[self.index_courant + 1:]
 

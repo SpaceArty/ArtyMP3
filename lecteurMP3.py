@@ -1,15 +1,21 @@
 import silent_pygame_import
-import pygame, json
+import pygame, json, math
 from playlist import PlaylistManager
+import settingsManager
 
-SETTINGS_FILE = "settings.json"
+settings_manager = settingsManager.SettingsManager()
 BOUCLE_OFF, BOUCLE_ONCE, BOUCLE_ALWAYS = 0, 1, 2
 
 class LecteurMP3:
     def __init__(self, label_fichier, progression, bouton_play, img_play=None, img_pause=None, slider_volume=None,
-                 btn_boucle=None, img_boucle=None, img_boucle_once=None, img_boucle_always=None, root=None):
+                 btn_boucle=None, img_boucle=None, img_boucle_once=None, img_boucle_always=None, root=None,
+                 app_name="ArtyMP3", default_file="settings.json"):
         pygame.init()
         pygame.mixer.init()
+
+        self.app_name = app_name
+        self.default_file = default_file
+        self.settings_file = settings_manager.get_user_settings_path()
 
         # Références widgets UI
         self.label_fichier = label_fichier
@@ -60,30 +66,23 @@ class LecteurMP3:
 
     # --------------------------------------------------------------- VOLUME
     def sauvegarder_volume(self, volume):
-        try:
-            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            data = {}
-        data["volume"] = volume
-        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
+        settings_manager.set_volume(volume)
 
     def charger_volume(self):
-        try:
-            with open(SETTINGS_FILE, "r") as f:
-                data = json.load(f)
-                return data.get("volume", 100)
-        except FileNotFoundError:
-            return 100
-        
-    def changer_volume(self, valeur):
-        volume = max(0, min(float(valeur), 100)) / 100
-        pygame.mixer.music.set_volume(volume)
-        self.sauvegarder_volume(int(valeur))
+        return settings_manager.get_volume()
 
+    def changer_volume(self, valeur):
+        self.volume = int(valeur)
+        volume_lineaire = self.volume / 100
+        volume_reel = self.volume_percu(volume_lineaire)  # OK, méthode d'instance
+        pygame.mixer.music.set_volume(volume_reel)
+        print(f"Volume slider: {self.volume}, volume réel appliqué: {volume_reel:.2f}")
+        settings_manager.set_volume(self.volume)
         if hasattr(self, "label_valeur_volume"):
-            self.label_valeur_volume.config(text=str(int(valeur)))
+            self.label_valeur_volume.config(text=str(self.volume))
+
+    def volume_percu(self, valeur_slider):
+        return valeur_slider * 0.58
 
     # --------------------------------------------------------------- LECTURE / PAUSE
     def jouer_ou_pause(self, img_play, img_pause):

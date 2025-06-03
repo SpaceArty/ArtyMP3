@@ -1,50 +1,18 @@
-import sys, os, json
+import os, sys
 import tkinter.messagebox as messagebox
 import tkinter as tk
 from PIL import Image, ImageTk
 from mutagen.easyid3 import EasyID3
+import settingsManager
 
-# --------------------------------------------------------------- LE GOAT
+settings_manager = settingsManager.SettingsManager()
+
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
-    except AttributeError:
+    except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-
-def load_settings():
-    chemin = resource_path("settings.json")
-    try:
-        with open(chemin, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}
-
-settings = load_settings()
-VOLUME = settings.get("volume", 50)
-COULEUR_BAS = settings.get("COULEUR_BAS", "#333333")
-COULEUR_FOND = settings.get("COULEUR_FOND", "#222222")
-
-BOUCLE_OFF = settings.get("BOUCLE_OFF", 0)
-BOUCLE_ONCE = settings.get("BOUCLE_ONCE", 1)
-BOUCLE_ALWAYS = settings.get("BOUCLE_ALWAYS", 2)
-SHUFFLE_ALTERNATIF = settings.get("SHUFFLE_ALTERNATIF", False)
-FENETRE_DYNAMIQUE = settings.get("FENETRE_DYNAMIQUE", False)
-
-# --------------------------------------------------------------- ET LE RESTE
-def charger_image(nom):
-    chemin = resource_path(f"Images/{nom}.png")
-    image = Image.open(chemin).convert("RGBA")
-    image = image.resize((30, 30), Image.Resampling.LANCZOS)
-    return ImageTk.PhotoImage(image)
-
-def bouton_icone(image, commande=None):
-    btn = tk.Button(
-        bg=COULEUR_BAS, image=image, command=commande, activebackground="#222222",
-        borderwidth=0, highlightthickness=0, bd=0, relief='flat'
-    )
-    btn.image = image
-    return btn
 
 def get_artiste(chemin):
     try:
@@ -52,134 +20,151 @@ def get_artiste(chemin):
         return tags.get("artist", ["Inconnu"])[0]
     except Exception:
         return "Inconnu"
-    
+
 def mettre_a_jour_titre_fenetre(root, morceau_actuel=None):
     if morceau_actuel:
-        # Extraire juste le nom du fichier sans chemin ni extension
         nom_simple = os.path.basename(morceau_actuel)
         nom_sans_extension = os.path.splitext(nom_simple)[0]
         root.title(nom_sans_extension)
     else:
         root.title("ArtyMP3")
 
-def ouvrir_settings(img_help, img_boucle):
-    settings_actuels = load_settings()
+class Utils:
+    def __init__(self, root, settingsManager):
+        self.root = root
+        self.settingsManager = settingsManager
 
-    fenetre_settings = tk.Toplevel()
-    fenetre_settings.title("Paramètres")
-    fenetre_settings.configure(bg=settings_actuels.get("COULEUR_FOND", "#222222"))
-    fenetre_settings.geometry("320x280")
+        # Charger les couleurs
+        self.COULEUR_FOND = self.settingsManager.get("COULEUR_FOND", "#222222")
+        self.COULEUR_BAS = self.settingsManager.get("COULEUR_BAS", "#333333")
 
-    frame_titre = tk.Frame(fenetre_settings, bg=COULEUR_FOND)
-    frame_titre.pack(fill=tk.X, pady=10, padx=10)
+        self.root.configure(bg=self.COULEUR_FOND)
 
-    btn_help_settings = tk.Button(frame_titre, image=img_help, command=afficher_aide,
-                                  bg=COULEUR_FOND, activebackground=COULEUR_FOND,
-                                  borderwidth=0, highlightthickness=0, relief="flat")
-    btn_help_settings.pack(side=tk.LEFT)
+    def charger_image(self, nom):
+        chemin = resource_path(f"Images/{nom}.png")
+        image = Image.open(chemin).convert("RGBA")
+        image = image.resize((30, 30), Image.Resampling.LANCZOS)
+        return ImageTk.PhotoImage(image)
 
-    # Frame intermédiaire pour centrer le label
-    frame_centre = tk.Frame(frame_titre, bg=COULEUR_FOND)
-    frame_centre.pack(side=tk.LEFT, fill=tk.X, expand=True)
+    def bouton_icone(self, image, commande=None):
+        btn = tk.Button(
+            bg=self.COULEUR_BAS, image=image, command=commande, activebackground="#222222",
+            borderwidth=0, highlightthickness=0, bd=0, relief='flat'
+        )
+        btn.image = image
+        return btn
 
-    label_titre = tk.Label(frame_centre, text="Paramètres", font=("Arial", 14, "bold"),
-                           bg=COULEUR_FOND, fg="white")
-    label_titre.pack(anchor="center")  # centrer horizontalement dans ce frame
+    def ouvrir_settings(self, img_help, img_boucle):
+        self.settingsManager.settings = self.settingsManager.load_settings()
 
-    # Définir reset_champs AVANT d'utiliser btn_reset
-    def reset_champs():
-        entry_fond.delete(0, tk.END)
-        entry_fond.insert(0, settings.get("DEFAULT_COULEUR_FOND", "#222222"))
-        entry_bas.delete(0, tk.END)
-        entry_bas.insert(0, settings.get("DEFAULT_COULEUR_BAS", "#333333"))
-        var_shuffle_alt.set(settings.get("DEFAULT_SHUFFLE_ALTERNATIF", False))
-        var_nom_fenetre_dynamique.set(settings.get("DEFAULT_FENETRE_DYNAMIQUE", False))
+        fenetre_settings = tk.Toplevel()
+        fenetre_settings.title("Paramètres")
+        fenetre_settings.configure(bg=self.settingsManager.get("COULEUR_FOND", "#222222"))
+        fenetre_settings.geometry("320x280")
 
-    btn_reset = tk.Button(frame_titre, image=img_boucle, command=reset_champs,
-                          bg=COULEUR_FOND, activebackground=COULEUR_FOND,
-                          borderwidth=0, highlightthickness=0, relief="flat")
-    btn_reset.pack(side=tk.RIGHT)
+        frame_titre = tk.Frame(fenetre_settings, bg=self.COULEUR_FOND)
+        frame_titre.pack(fill=tk.X, pady=10, padx=10)
 
-    frame_couleurs = tk.Frame(fenetre_settings, bg=COULEUR_FOND)
-    frame_couleurs.pack(pady=20, padx=20, fill=tk.X)
-    frame_couleurs.grid_columnconfigure(0, weight=1)
-    frame_couleurs.grid_columnconfigure(5, weight=1)
+        btn_help_settings = tk.Button(frame_titre, image=img_help, command=self.afficher_aide,
+                                      bg=self.COULEUR_FOND, activebackground=self.COULEUR_FOND,
+                                      borderwidth=0, highlightthickness=0, relief="flat")
+        btn_help_settings.pack(side=tk.LEFT)
 
-    # Champ couleur fond
-    label_fond = tk.Label(frame_couleurs, text="Couleur Fond :", bg=COULEUR_FOND, fg="white")
-    label_fond.grid(row=0, column=0, sticky="w", padx=(0,5))
-    entry_fond = tk.Entry(frame_couleurs, width=20)
-    entry_fond.grid(row=1, column=0, sticky="w", padx=(0,15))
-    entry_fond.insert(0, settings.get("COULEUR_FOND", "#222222"))
+        frame_centre = tk.Frame(frame_titre, bg=self.COULEUR_FOND)
+        frame_centre.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-    # Champ couleur bas
-    label_bas = tk.Label(frame_couleurs, text="Couleur Bas :", bg=COULEUR_FOND, fg="white")
-    label_bas.grid(row=0, column=1, sticky="w", padx=(15,5))
-    entry_bas = tk.Entry(frame_couleurs, width=20)
-    entry_bas.grid(row=1, column=1, sticky="w", padx=(0,0))
-    entry_bas.insert(0, settings.get("COULEUR_BAS", "#333333"))
+        label_titre = tk.Label(frame_centre, text="Paramètres", font=("Arial", 14, "bold"),
+                               bg=self.COULEUR_FOND, fg="white")
+        label_titre.pack(anchor="center")
 
-    # Champ Shuffle alternatif
-    var_shuffle_alt = tk.BooleanVar(value=settings_actuels.get("SHUFFLE_ALTERNATIF", False))
-    check_shuffle_alt = tk.Checkbutton(fenetre_settings, text="Activer le shuffle alternatif",
-                                       variable=var_shuffle_alt, onvalue=True, offvalue=False,
-                                       bg=COULEUR_FOND, fg="white", selectcolor=COULEUR_FOND,
-                                       activebackground=COULEUR_FOND)
-    check_shuffle_alt.pack(pady=(10, 5))
+        def reset_champs():
+            def_couleur_fond = self.settingsManager.get("DEFAULT_COULEUR_FOND", "#222222")
+            def_couleur_bas = self.settingsManager.get("DEFAULT_COULEUR_BAS", "#333333")
+            def_shuffle_alt = self.settingsManager.get("DEFAULT_SHUFFLE_ALTERNATIF", False)
+            def_fenetre_dyn = self.settingsManager.get("DEFAULT_FENETRE_DYNAMIQUE", False)
 
-    # Checkbox Nom de fenêtre dynamique
-    var_nom_fenetre_dynamique = tk.BooleanVar(value=settings_actuels.get("FENETRE_DYNAMIQUE", False))
-    check_nom_fenetre_dynamique = tk.Checkbutton(fenetre_settings, text="Activer nom de fenêtre dynamique",
-                                       variable=var_nom_fenetre_dynamique, onvalue=True, offvalue=False,
-                                       bg=COULEUR_FOND, fg="white", selectcolor=COULEUR_FOND,
-                                       activebackground=COULEUR_FOND)
-    check_nom_fenetre_dynamique.pack(pady=(0, 10))
+            # Mise à jour UI
+            entry_fond.delete(0, tk.END)
+            entry_fond.insert(0, def_couleur_fond)
+            entry_bas.delete(0, tk.END)
+            entry_bas.insert(0, def_couleur_bas)
+            var_shuffle_alt.set(def_shuffle_alt)
+            var_nom_fenetre_dynamique.set(def_fenetre_dyn)
 
-    def sauvegarder_params():
-        new_fond = entry_fond.get()
-        new_bas = entry_bas.get()
-        new_shuffle_alt = var_shuffle_alt.get()
-        new_nom_fenetre_dynamique = var_nom_fenetre_dynamique.get()
+            # Mise à jour settings_manager (si tu veux vraiment écraser les defaults)
+            self.settingsManager.set("DEFAULT_COULEUR_FOND", def_couleur_fond)
+            self.settingsManager.set("DEFAULT_COULEUR_BAS", def_couleur_bas)
+            self.settingsManager.set("DEFAULT_SHUFFLE_ALTERNATIF", def_shuffle_alt)
+            self.settingsManager.set("DEFAULT_FENETRE_DYNAMIQUE", def_fenetre_dyn)
 
-        print(f"Nouvelle couleur fond : {new_fond}")
-        print(f"Nouvelle couleur bas : {new_bas}")
-        print(f"Shuffle alternatif : {new_shuffle_alt}")
-        print(f"Nom fenêtre dynamique : {new_nom_fenetre_dynamique}")
 
-        # Sauvegarder les paramètres
-        new_settings = settings_actuels.copy()
-        new_settings["COULEUR_FOND"] = new_fond
-        new_settings["COULEUR_BAS"] = new_bas
-        new_settings["SHUFFLE_ALTERNATIF"] = new_shuffle_alt
-        new_settings["FENETRE_DYNAMIQUE"] = new_nom_fenetre_dynamique
+        btn_reset = tk.Button(frame_titre, image=img_boucle, command=reset_champs,
+                              bg=self.COULEUR_FOND, activebackground=self.COULEUR_FOND,
+                              borderwidth=0, highlightthickness=0, relief="flat")
+        btn_reset.pack(side=tk.RIGHT)
 
-        chemin = resource_path("settings.json")
-        try:
-            with open(chemin, "w", encoding="utf-8") as f:
-                json.dump(new_settings, f, indent=4)
-        except Exception as e:
-            print(f"Erreur lors de la sauvegarde : {e}")
-        global settings
-        settings = load_settings()
-        fenetre_settings.destroy()
+        frame_couleurs = tk.Frame(fenetre_settings, bg=self.COULEUR_FOND)
+        frame_couleurs.pack(pady=20, padx=20, fill=tk.X)
+        frame_couleurs.grid_columnconfigure(0, weight=1)
+        frame_couleurs.grid_columnconfigure(5, weight=1)
 
-    btn_sauvegarder = tk.Button(fenetre_settings, text="Sauvegarder", command=sauvegarder_params,
-                                bg=COULEUR_BAS, fg="white", font=("Arial", 12))
-    btn_sauvegarder.pack(pady=15, ipadx=10, ipady=5)
+        label_fond = tk.Label(frame_couleurs, text="Couleur Fond :", bg=self.COULEUR_FOND, fg="white")
+        label_fond.grid(row=0, column=0, sticky="w", padx=(0, 5))
+        entry_fond = tk.Entry(frame_couleurs, width=20)
+        entry_fond.grid(row=1, column=0, sticky="w", padx=(0, 15))
+        entry_fond.insert(0, self.settingsManager.get("COULEUR_FOND", "#222222"))
 
-    fenetre_settings.mainloop()
+        label_bas = tk.Label(frame_couleurs, text="Couleur Bas :", bg=self.COULEUR_FOND, fg="white")
+        label_bas.grid(row=0, column=1, sticky="w", padx=(15, 5))
+        entry_bas = tk.Entry(frame_couleurs, width=20)
+        entry_bas.grid(row=1, column=1, sticky="w")
+        entry_bas.insert(0, self.settingsManager.get("COULEUR_BAS", "#333333"))
 
-def afficher_aide():
-    messagebox.showinfo("Aide", "Bienvenue dans le menu aide. Ce menu contient le mode d'emplois, des réponses aux questions fréquentes, des crédits et bien plus!" \
-    "Si vous avez des questions, vous pouvez venir me demander sur discord (@spacearty) ou la poster sur le GitHub : https://github.com/SpaceArty/ArtyMP3/" \
-    "\n\nUTILISATION : \nPour charger les fichier, il suffit de cliquer sur le bouton 'dossier' et de choisir un, ou plusieurs fichiers. Note: seul les fichiers .mp3 sont " \
-    "prit en compte.\n\nLe bouton 'shuffle' permet de randomiser tout les mp3 actuellement chargé. L'algorithme utilisé est actuellement du 'vrai' random, donc il est possible " \
-    "que aucun des mp3 ne change de place si vous avez de la chance!\n\nLe bouton 'paramètre' ouvre un sous menu. Et rien d'autre de très utile. Mais laissez le, il fait de son mieux." \
-    "\n\nLes boutons 'previous' et 'next' fonctionnent (la plupart du temps) et permettent de changer de mp3 a sa guise. Note: pour ceux qui savent, ces boutons déplacent " \
-    "physiquement les mp3 dans la table (réference a Annick Dupont)\n\nLe bouton 'play' / 'pause' est modifié dynamiquement grâce a de la magie noir que certains appellent " \
-    "'code'... Mais au sinon il ne fait rien d'autre de spécial que mettre en pause le mp3.\n\nLe slider en bas a droite permet de changer le volume du mp3. " \
-    "Il se rapellera du volume que vous aviez mit avant donc pas besoin de le changer a chaque lancement.\n\nQUESTIONS :\nQ : Que fait le 'Shuffle Alternatif' ?" \
-    " R : C'est une fonction en BETA qui permet de mélanger les MP3 en fonctione des artistes. Note : Les métadonnées du fichier MP3 sont nécessaire. " \
-    "Si a coté du titre du MP3 c'est marqué 'Inconnu', ca veut dire qu'elles sont manquantes.\n\nQ : A quoi sert le 'Nom de Fenêtre Dynamique' ? " \
-    "R : Ça change le nom de la fenêtre en fonction du MP3 actuel." \
-    "\n\nCREDITS :\nSpaceArty | Code\nDestro | Graphismes\nChatGPT | Le goat")
+        var_shuffle_alt = tk.BooleanVar(value=self.settingsManager.get("SHUFFLE_ALTERNATIF", False))
+        check_shuffle_alt = tk.Checkbutton(fenetre_settings, text="Activer le shuffle alternatif",
+                                           variable=var_shuffle_alt, onvalue=True, offvalue=False,
+                                           bg=self.COULEUR_FOND, fg="white", selectcolor=self.COULEUR_FOND,
+                                           activebackground=self.COULEUR_FOND)
+        check_shuffle_alt.pack(pady=(10, 5))
+
+        var_nom_fenetre_dynamique = tk.BooleanVar(value=self.settingsManager.get("FENETRE_DYNAMIQUE", False))
+        check_nom_fenetre_dynamique = tk.Checkbutton(fenetre_settings, text="Activer nom de fenêtre dynamique",
+                                                     variable=var_nom_fenetre_dynamique, onvalue=True, offvalue=False,
+                                                     bg=self.COULEUR_FOND, fg="white", selectcolor=self.COULEUR_FOND,
+                                                     activebackground=self.COULEUR_FOND)
+        check_nom_fenetre_dynamique.pack(pady=(0, 10))
+
+        def sauvegarder_params():
+            new_fond = entry_fond.get()
+            new_bas = entry_bas.get()
+            new_shuffle_alt = var_shuffle_alt.get()
+            new_nom_fenetre_dynamique = var_nom_fenetre_dynamique.get()
+
+            self.settingsManager.set("COULEUR_FOND", new_fond)
+            self.settingsManager.set("COULEUR_BAS", new_bas)
+            self.settingsManager.set("SHUFFLE_ALTERNATIF", new_shuffle_alt)
+            self.settingsManager.set("FENETRE_DYNAMIQUE", new_nom_fenetre_dynamique)
+
+            fenetre_settings.destroy()
+
+        btn_sauvegarder = tk.Button(fenetre_settings, text="Sauvegarder", command=sauvegarder_params,
+                                    bg=self.COULEUR_BAS, fg="white", font=("Arial", 12))
+        btn_sauvegarder.pack(pady=15, ipadx=10, ipady=5)
+
+    def afficher_aide(self):
+        messagebox.showinfo(
+            "Aide",
+            "Bienvenue dans le menu aide. Ce menu contient le mode d'emplois, des réponses aux questions fréquentes, des crédits et bien plus!"
+            "Si vous avez des questions, vous pouvez venir me demander sur discord (@spacearty) ou la poster sur le GitHub : https://github.com/SpaceArty/ArtyMP3/"
+            "\n\nUTILISATION : \nPour charger les fichier, il suffit de cliquer sur le bouton 'dossier' et de choisir un, ou plusieurs fichiers. Note: seul les fichiers .mp3 sont "
+            "prit en compte.\n\nLe bouton 'shuffle' permet de randomiser tout les mp3 actuellement chargé. L'algorithme utilisé est actuellement du 'vrai' random, donc il est possible "
+            "que aucun des mp3 ne change de place si vous avez de la chance!\n\nLe bouton 'paramètre' ouvre un sous menu. Et rien d'autre de très utile. Mais laissez le, il fait de son mieux."
+            "\n\nLes boutons 'previous' et 'next' fonctionnent (la plupart du temps) et permettent de changer de mp3 a sa guise. Note: pour ceux qui savent, ces boutons déplacent "
+            "physiquement les mp3 dans la table (réference a Annick Dupont)\n\nLe bouton 'play' / 'pause' est modifié dynamiquement grâce a de la magie noir que certains appellent "
+            "'code'... Mais au sinon il ne fait rien d'autre de spécial que mettre en pause le mp3.\n\nLe slider en bas a droite permet de changer le volume du mp3. "
+            "Il se rapellera du volume que vous aviez mit avant donc pas besoin de le changer a chaque lancement.\n\nQUESTIONS :\nQ : Que fait le 'Shuffle Alternatif' ?"
+            " R : C'est une fonction en BETA qui permet de mélanger les MP3 en fonctione des artistes. Note : Les métadonnées du fichier MP3 sont nécessaire. "
+            "Si a coté du titre du MP3 c'est marqué 'Inconnu', ca veut dire qu'elles sont manquantes.\n\nQ : A quoi sert le 'Nom de Fenêtre Dynamique' ? "
+            "R : Ça change le nom de la fenêtre en fonction du MP3 actuel."
+            "\n\nCREDITS :\nSpaceArty | Code\nDestro | Graphismes\nChatGPT | Le goat"
+        )
