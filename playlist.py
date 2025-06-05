@@ -2,7 +2,7 @@ import os, random, tkinter as tk
 from tkinter import filedialog
 import silent_pygame_import  # fait l'import silencieux
 import pygame  # maintenant sans message
-from collections import defaultdict
+from collections import defaultdict, deque
 from mutagen.mp3 import MP3
 import utils, settingsManager
 
@@ -185,25 +185,36 @@ class PlaylistManager:
 
     def _melanger_par_artiste(self):
         print('ALTERNATIF')
-        prefixe = self.playlist[:self.index_courant + 1]
-        suffixe = self.playlist[self.index_courant + 1:]
 
-        morceaux_par_artiste = defaultdict(list)
-        for chemin in suffixe:
-            artiste = utils.get_artiste(chemin)
+        prefixe = self.playlist[:self.index_courant + 1]
+        morceaux_a_venir = self.playlist[self.index_courant + 1:]
+
+        # Grouper les morceaux par artiste
+        morceaux_par_artiste = defaultdict(deque)
+        for chemin in morceaux_a_venir:
+            artiste = utils.get_artiste(chemin) or "Inconnu"
             morceaux_par_artiste[artiste].append(chemin)
 
+        # Mélanger les morceaux de chaque artiste individuellement
         for morceaux in morceaux_par_artiste.values():
             random.shuffle(morceaux)
 
+        # Créer une liste d'artistes disponibles
         artistes = list(morceaux_par_artiste.keys())
-        resultat = []
 
-        while any(morceaux_par_artiste.values()):
-            random.shuffle(artistes)
-            for artiste in artistes:
-                if morceaux_par_artiste[artiste]:
-                    resultat.append(morceaux_par_artiste[artiste].pop(0))
+        resultat = []
+        while morceaux_par_artiste:
+            # Choisir un artiste aléatoirement
+            artiste = random.choice(artistes)
+            if artiste in morceaux_par_artiste and morceaux_par_artiste[artiste]:
+                resultat.append(morceaux_par_artiste[artiste].popleft())
+                # Si l'artiste n'a plus de morceaux, le retirer de la liste
+                if not morceaux_par_artiste[artiste]:
+                    del morceaux_par_artiste[artiste]
+                    artistes.remove(artiste)
+
+        # Mélanger une dernière fois pour s'assurer de la diversité
+        random.shuffle(resultat)
 
         self.playlist = prefixe + resultat
         self.mettre_a_jour_liste_prochains()
