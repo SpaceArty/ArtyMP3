@@ -1,6 +1,4 @@
-Ceci est une copie du texte affiché lorsque le bouton 'aide' est cliqué.
-
-Bienvenue dans le menu aide. Ce menu contient le mode d'emploi, des réponses aux questions fréquentes, des crédits et bien plus !
+Bienvenue dans le fichier de texte avancé. Ce fichier contient le mode d'emploi, des réponses aux questions fréquentes, des crédits et bien plus !
 Si vous avez des questions, vous pouvez me contacter sur Discord (@spacearty) ou poster une question sur le GitHub : https://github.com/SpaceArty/ArtyMP3/
 
 UTILISATION :
@@ -9,9 +7,9 @@ Pour charger des fichiers, cliquez sur le bouton Dossier et choisissez un ou plu
 Note : seuls les fichiers .mp3 sont pris en compte.
 
 Le bouton Shuffle permet de randomiser tous les MP3 actuellement chargés.
-L’algorithme utilisé est un vrai random, donc il est possible que la playlist ne change pas du tout si vous avez de la chance !
+L’algorithme utilisé est 100% random (LETZ GO GAMBLING), donc il est possible que la playlist ne change pas du tout si vous avez de la chance !
 
-Le bouton Paramètres ouvre un sous-menu. Rien de très utile pour l’instant, mais laissez-le, il fait de son mieux.
+Le bouton Paramètres ouvre un sous-menu contenant des options de personalisation. Rien de très utile pour l’instant, mais laissez-le, il fait de son mieux.
 
 Les boutons Previous et Next fonctionnent (la plupart du temps) et permettent de changer de MP3 à votre guise.
 Note : ces boutons déplacent physiquement les MP3 dans la liste (référence à Annick Dupont).
@@ -22,6 +20,8 @@ Sinon, il met simplement en pause ou relance la lecture du MP3.
 Le slider en bas à droite permet de changer le volume du MP3.
 Il mémorise le volume choisi, donc pas besoin de le régler à chaque lancement.
 
+Vous pouvez aussi utiliser le slider en haut pour changer a quel moment dans le MP3 on est. C'était une petite salope a coder alors appréciez le par pitié.
+
 QUESTIONS :
 
 Q : Que fait le "Shuffle Alternatif" ? R : C'est une fonction en BETA qui permet de mélanger les MP3 en fonctione des artistes.
@@ -31,5 +31,7 @@ Q : A quoi sert le "Nom de Fenêtre Dynamique" ? R : Ça change le nom de la fen
 CRÉDITS :
 
 SpaceArty | Code
+
 Destro | Graphismes
+
 ChatGPT | Le GOAT

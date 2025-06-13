@@ -154,17 +154,9 @@ class Utils:
     def afficher_aide(self):
         messagebox.showinfo(
             "Aide",
-            "Bienvenue dans le menu aide. Ce menu contient le mode d'emplois, des réponses aux questions fréquentes, des crédits et bien plus!"
-            "Si vous avez des questions, vous pouvez venir me demander sur discord (@spacearty) ou la poster sur le GitHub : https://github.com/SpaceArty/ArtyMP3/"
-            "\n\nUTILISATION : \nPour charger les fichier, il suffit de cliquer sur le bouton 'dossier' et de choisir un, ou plusieurs fichiers. Note: seul les fichiers .mp3 sont "
-            "prit en compte.\n\nLe bouton 'shuffle' permet de randomiser tout les mp3 actuellement chargé. L'algorithme utilisé est actuellement du 'vrai' random, donc il est possible "
-            "que aucun des mp3 ne change de place si vous avez de la chance!\n\nLe bouton 'paramètre' ouvre un sous menu. Et rien d'autre de très utile. Mais laissez le, il fait de son mieux."
-            "\n\nLes boutons 'previous' et 'next' fonctionnent (la plupart du temps) et permettent de changer de mp3 a sa guise. Note: pour ceux qui savent, ces boutons déplacent "
-            "physiquement les mp3 dans la table (réference a Annick Dupont)\n\nLe bouton 'play' / 'pause' est modifié dynamiquement grâce a de la magie noir que certains appellent "
-            "'code'... Mais au sinon il ne fait rien d'autre de spécial que mettre en pause le mp3.\n\nLe slider en bas a droite permet de changer le volume du mp3. "
-            "Il se rapellera du volume que vous aviez mit avant donc pas besoin de le changer a chaque lancement.\n\nQUESTIONS :\nQ : Que fait le 'Shuffle Alternatif' ?"
-            " R : C'est une fonction en BETA qui permet de mélanger les MP3 en fonctione des artistes. Note : Les métadonnées du fichier MP3 sont nécessaire. "
-            "Si a coté du titre du MP3 c'est marqué 'Inconnu', ca veut dire qu'elles sont manquantes.\n\nQ : A quoi sert le 'Nom de Fenêtre Dynamique' ? "
-            "R : Ça change le nom de la fenêtre en fonction du MP3 actuel."
-            "\n\nCREDITS :\nSpaceArty | Code\nDestro | Graphismes\nChatGPT | Le goat"
+            "Bienvenue dans le menu aide. Ce menu est un tutoriel bref de comment utiliser cette app. Pour plus d'informations, allez lire le README sur la page github. " \
+            "https://github.com/SpaceArty/ArtyMP3\n\nComment charger des fichiers ?\nCliquer sur le bouton dossier, ca ouvrira l'explorateur de fichiers. Ensuite il faut choisir" \
+            "quelles mp3 vous voulez lire. Pour tester si tout fonctionne, lors du téléchargement il y a eut un dossier appelé SELECT ME TO TEST. Choisisez ce dossier, il y a quelque" \
+            "mp3 dedans. Sélectionez les tous (CTRL-A) puis confirmez le choix (ENTER). Et voila, tout fonctionne désormais, vous avez votre liste de mp3.\n\nMaintenant vous pouvez" \
+            "créer un dossier avec vos propres mp3 et le sélectioner pour tous les lire."
         )
