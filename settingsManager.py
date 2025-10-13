@@ -1,4 +1,4 @@
-import os, sys, json
+import os, sys, json, platform
 
 class SettingsManager:
     def __init__(self, app_name="ArtyMP3", default_file="settings.json"):
@@ -18,40 +18,59 @@ class SettingsManager:
         return os.path.join(base_path, relative_path)
 
     def get_user_settings_path(self):
-        appdata = os.getenv("APPDATA")
-        dossier = os.path.join(appdata, self.app_name)
-        os.makedirs(dossier, exist_ok=True)
-        return os.path.join(dossier, self.default_file)
+        system = platform.system()
+        try:
+            if system == "Windows":
+                appdata = os.getenv("APPDATA", os.path.expanduser("~"))
+            elif system == "Darwin":  # macOS (beurk)
+                appdata = os.path.expanduser("~/Library/Application Support")
+            else:  # Linux (my goat)
+                appdata = os.path.expanduser("~/.config")
+
+            dossier = os.path.join(appdata, self.app_name)
+            os.makedirs(dossier, exist_ok=True)
+            return os.path.join(dossier, self.default_file)
+        except Exception as e:
+            print(f"[⚠] Impossible de créer le dossier de paramètres : {e}")
+            return os.path.join(os.getcwd(), self.default_file)
 
     def load_settings(self):
-        # Charge les paramètres utilisateur s'ils existent
+        # Essaye de load les settings de l'utilisateur
         if os.path.exists(self.settings_path):
             try:
                 with open(self.settings_path, "r", encoding="utf-8") as f:
                     return json.load(f)
-            except json.JSONDecodeError:
-                print("[⚠] JSON utilisateur corrompu, chargement des defaults.")
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                print(f"[⚠] JSON utilisateur corrompu ou encodage invalide, chargement des defaults : {e}")
 
-        # Sinon charge les paramètres par défaut
-        try:
+        try: # Sinon essaye de load les settings pas défaut
             default_path = self.resource_path(self.default_file)
-            with open(default_path, "r", encoding="utf-8") as f:
-                defaults = json.load(f)
-            # Sauvegarde par défaut dans le fichier utilisateur
-            with open(self.settings_path, "w", encoding="utf-8") as f:
-                json.dump(defaults, f, indent=4)
+            if os.path.exists(default_path):
+                with open(default_path, "r", encoding="utf-8") as f:
+                    defaults = json.load(f)
+            else:
+                print(f"[⚠] Fichier par défaut introuvable : {default_path}")
+                defaults = {}
+
+            try: # Et essaye de les sauvegarder
+                with open(self.settings_path, "w", encoding="utf-8") as f:
+                    json.dump(defaults, f, indent=4)
+            except Exception as e:
+                print(f"[⚠] Impossible de sauvegarder les paramètres par défaut : {e}")
+
             return defaults
         except Exception as e:
-            print(f"[⚠] Erreur chargement defaults : {e}")
+            print(f"[⚠] Erreur lors du chargement des paramètres par défaut : {e}")
             return {}
 
     def save_settings(self):
         try:
+            os.makedirs(os.path.dirname(self.settings_path), exist_ok=True)
             with open(self.settings_path, "w", encoding="utf-8") as f:
                 json.dump(self.settings, f, indent=4)
             self.afficher_tous_les_parametres()
         except Exception as e:
-            print(f"[⚠] Erreur lors de la sauvegarde : {e}")
+            print(f"[⚠] Erreur lors de la sauvegarde des paramètres : {e}")
 
     def afficher_tous_les_parametres(self):
         print("\n[📋] Paramètres actuels :")

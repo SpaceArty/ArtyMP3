@@ -5,8 +5,13 @@ from lecteurMP3 import LecteurMP3
 from playlist import PlaylistManager
 from slider import SliderCustom
 
-# pyinstaller --onefile --windowed --add-data "settings.json;." --add-data "Images;Images" --name ArtyMP3 main.py
-# La commande ci dessus permet de créer le fichier .exe une fois des changements effectués.
+# Les commandes ci dessous permetent de créer un fichier executable pour chaque OS différent.
+
+# WINDOWS
+# pyinstaller --onefile --windowed --add-data "settings.json;." --add-data "Images;Images" --name ArtyMP3 main.py"
+
+# LINUX & MAC
+# pyinstaller --onefile --windowed --name ArtyMP3 --add-data "settings.json:." --add-data "Images:Images" --hidden-import=PIL._tkinter_finder main.py
 
 fenetre = tk.Tk()
 fenetre.title("ArtyMP3")
