@@ -15,7 +15,7 @@ from slider import SliderCustom
 
 fenetre = tk.Tk()
 fenetre.title("ArtyMP3")
-fenetre.geometry("700x350")
+fenetre.geometry("700x400")
 
 settings = settingsManager.SettingsManager()
 COULEUR_FOND = settings.get('COULEUR_FOND', '#222222')
